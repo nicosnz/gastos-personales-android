@@ -1,6 +1,7 @@
 
 package com.example.gastos
 
+import android.R
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -29,9 +30,12 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.gastos.ui.theme.GastosTheme
@@ -120,6 +124,18 @@ fun AplicacionGastos() {
     val movimientos = remember {
         mutableStateListOf<Movimiento>()
     }
+    val categorias = listOf(
+        "Comida",
+        "Transporte",
+        "Vivienda",
+        "Educación",
+        "Tecnología",
+        "Entretenimiento",
+        "Salud",
+        "Compras",
+        "Otros"
+    )
+
 
     // ===============================
     // CÁLCULOS
@@ -389,28 +405,46 @@ fun AplicacionGastos() {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+
+                    .background(color = Color(0xFF1E293B),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = Color(0xFFE2E8F0),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(9.dp)
+
+
+                ,
+
             ) {
 
                 Text(
-                    text = "Descripción",
-                    modifier = Modifier.weight(2f)
+                    text = "Tipo",
+                    modifier = Modifier.weight(1.5f),
+                    color= Color.White
                 )
 
                 Text(
                     text = "Categoría",
-                    modifier = Modifier.weight(2f)
+                    modifier = Modifier.weight(3f),
+                    color= Color.White
                 )
 
+
+
+
+                Text(
+                    text = "Descripción",
+                    modifier = Modifier.weight(3f),
+                    color= Color.White
+                )
                 Text(
                     text = "Monto",
-                    modifier = Modifier.weight(2f)
-                )
-
-                Text(
-                    text = "Tipo",
-                    modifier = Modifier.weight(2f)
+                    modifier = Modifier.weight(2f),
+                    color= Color.White
                 )
             }
 
@@ -427,7 +461,7 @@ fun AplicacionGastos() {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp)
+
                         .background(color = colorTipo, shape = RoundedCornerShape(8.dp))
                         .border(
                             width = 1.dp,
@@ -435,28 +469,30 @@ fun AplicacionGastos() {
                             shape = RoundedCornerShape(8.dp)
                         )
                         .padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    
+
                 ) {
-
                     Text(
-                        text = movimiento.descripcion,
-                        modifier = Modifier.weight(2f)
+                        text = movimiento.tipo.name,
+                        modifier = Modifier.weight(1.5f)
                     )
-
                     Text(
                         text = movimiento.categoria,
-                        modifier = Modifier.weight(2f)
+                        modifier = Modifier.weight(3f)
                     )
+                    Text(
+                        text = movimiento.descripcion,
+                        modifier = Modifier.weight(3f)
+                    )
+
+
 
                     Text(
                         text = "Bs %.2f".format(movimiento.monto),
                         modifier = Modifier.weight(2f)
                     )
 
-                    Text(
-                        text = movimiento.tipo.name,
-                        modifier = Modifier.weight(2f)
-                    )
+
                 }
             }
         }
