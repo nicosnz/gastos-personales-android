@@ -32,9 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.gastos.ui.theme.GastosTheme
 
-// ===============================
-// DATOS
-// ===============================
+
 
 enum class TipoMovimiento {
     INGRESO,
@@ -48,9 +46,6 @@ data class Movimiento(
     val tipo: TipoMovimiento
 )
 
-// ===============================
-// FUNCIONES
-// ===============================
 
 fun calcularIngresos(movimientos: List<Movimiento>): Double {
     return movimientos
@@ -68,9 +63,7 @@ fun calcularSaldo(movimientos: List<Movimiento>): Double {
     return calcularIngresos(movimientos) - calcularEgresos(movimientos)
 }
 
-// ===============================
-// MAIN ACTIVITY
-// ===============================
+
 
 class MainActivity : ComponentActivity() {
 
@@ -87,9 +80,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// ===============================
-// APLICACIÓN
-// ===============================
+
 
 @Composable
 fun AplicacionGastos() {
@@ -373,49 +364,23 @@ fun AplicacionGastos() {
         // ===============================
         // MOVIMIENTOS
         // ===============================
-
-        Text(
-            text = "MOVIMIENTOS REALIZADOS",
-            style = MaterialTheme.typography.titleLarge
-        )
-
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
-
-        // ENCABEZADO
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-
+        if(movimientos.isEmpty()){
             Text(
-                text = "Descripción",
-                modifier = Modifier.weight(2f)
-            )
-
-            Text(
-                text = "Categoría",
-                modifier = Modifier.weight(2f)
-            )
-
-            Text(
-                text = "Monto",
-                modifier = Modifier.weight(2f)
-            )
-
-            Text(
-                text = "Tipo",
-                modifier = Modifier.weight(2f)
+                text = "No se registraron transacciones",
+                style = MaterialTheme.typography.titleLarge
             )
         }
+        else{
+            Text(
+                text = "MOVIMIENTOS REALIZADOS",
+                style = MaterialTheme.typography.titleLarge
+            )
 
-        // LISTA DE MOVIMIENTOS
+            Spacer(
+                modifier = Modifier.height(16.dp)
+            )
 
-        movimientos.forEach { movimiento ->
+            // ENCABEZADO
 
             Row(
                 modifier = Modifier
@@ -425,26 +390,60 @@ fun AplicacionGastos() {
             ) {
 
                 Text(
-                    text = movimiento.descripcion,
+                    text = "Descripción",
                     modifier = Modifier.weight(2f)
                 )
 
                 Text(
-                    text = movimiento.categoria,
+                    text = "Categoría",
                     modifier = Modifier.weight(2f)
                 )
 
                 Text(
-                    text = "Bs %.2f".format(movimiento.monto),
+                    text = "Monto",
                     modifier = Modifier.weight(2f)
                 )
 
                 Text(
-                    text = movimiento.tipo.name,
+                    text = "Tipo",
                     modifier = Modifier.weight(2f)
                 )
             }
+
+            // LISTA DE MOVIMIENTOS
+
+            movimientos.forEach { movimiento ->
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+
+                    Text(
+                        text = movimiento.descripcion,
+                        modifier = Modifier.weight(2f)
+                    )
+
+                    Text(
+                        text = movimiento.categoria,
+                        modifier = Modifier.weight(2f)
+                    )
+
+                    Text(
+                        text = "Bs %.2f".format(movimiento.monto),
+                        modifier = Modifier.weight(2f)
+                    )
+
+                    Text(
+                        text = movimiento.tipo.name,
+                        modifier = Modifier.weight(2f)
+                    )
+                }
+            }
         }
+
     }
 }
 
