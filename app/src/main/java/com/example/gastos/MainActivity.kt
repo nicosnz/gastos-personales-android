@@ -1,13 +1,10 @@
-
 package com.example.gastos
 
-import android.R
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,8 +18,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,11 +40,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.LineHeightStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.gastos.ui.theme.GastosTheme
-
 
 
 enum class TipoMovimiento {
@@ -72,7 +75,6 @@ fun calcularSaldo(movimientos: List<Movimiento>): Double {
 }
 
 
-
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,7 +91,19 @@ class MainActivity : ComponentActivity() {
 }
 
 
+// ===============================
+// COLORES DEL DISEÑO
+// ===============================
 
+private val VerdeHeader = Color(0xFFB9F7CE)
+private val VerdeBoton = Color(0xFFB9F7CE)
+private val VerdeIngreso = Color(0xFF16A34A)
+private val RojoEgreso = Color(0xFFDC2626)
+private val GrisTexto = Color(0xFF64748B)
+private val GrisBorde = Color(0xFFE2E8F0)
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AplicacionGastos() {
 
@@ -117,6 +131,12 @@ fun AplicacionGastos() {
         mutableStateOf("")
     }
 
+    // Estados solo de UI para los menús desplegables
+    var categoriaExpandida by remember { mutableStateOf(false) }
+    var tipoExpandido by remember { mutableStateOf(false) }
+    var tipoSeleccionado by remember { mutableStateOf(false) }
+    var saldoVisible by remember { mutableStateOf(true) }
+
     // ===============================
     // LISTA DE MOVIMIENTOS
     // ===============================
@@ -124,16 +144,16 @@ fun AplicacionGastos() {
     val movimientos = remember {
         mutableStateListOf<Movimiento>()
     }
+
     val categorias = listOf(
         "Comida",
         "Transporte",
-        "Vivienda",
-        "Educación",
-        "Tecnología",
-        "Entretenimiento",
-        "Salud",
-        "Compras",
         "Otros"
+    )
+
+    val tiposMovimiento = listOf(
+        TipoMovimiento.INGRESO,
+        TipoMovimiento.EGRESO
     )
 
 
@@ -141,8 +161,7 @@ fun AplicacionGastos() {
     // CÁLCULOS
     // ===============================
 
-    val totalIngresos = calcularIngresos(movimientos)
-    val totalEgresos = calcularEgresos(movimientos)
+
     val totalSaldo = calcularSaldo(movimientos)
 
     // ===============================
@@ -152,352 +171,398 @@ fun AplicacionGastos() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.White)
             .verticalScroll(rememberScrollState())
-            .padding(16.dp)
     ) {
 
-        // TÍTULO
-
-        Text(
-            text = "Control de Gastos",
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
-
         // ===============================
-        // DESCRIPCIÓN
+        // HEADER VERDE
         // ===============================
-
-        OutlinedTextField(
-            value = descripcion,
-            onValueChange = {
-                descripcion = it
-            },
-            label = {
-                Text("Descripción")
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
-
-        // ===============================
-        // MONTO
-        // ===============================
-
-        OutlinedTextField(
-            value = monto,
-            onValueChange = { valor ->
-
-                // Permite números y un punto/coma decimal
-                if (
-                    valor.isEmpty() ||
-                    valor.matches(Regex("^\\d*([.,]\\d*)?$"))
-                ) {
-                    monto = valor
-                }
-            },
-            label = {
-                Text("Monto")
-            },
-            modifier = Modifier.fillMaxWidth(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Decimal
-            )
-        )
-
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
-
-        // ===============================
-        // CATEGORÍA
-        // ===============================
-
-        OutlinedTextField(
-            value = categoria,
-            onValueChange = {
-                categoria = it
-            },
-            label = {
-                Text("Categoría")
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
-
-        // ===============================
-        // TIPO DE MOVIMIENTO
-        // ===============================
-
-        Text(
-            text = "Tipo de Movimiento",
-            style = MaterialTheme.typography.titleMedium
-        )
-
-        Spacer(
-            modifier = Modifier.height(8.dp)
-        )
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-
-            Button(
-                onClick = {
-                    tipoMovimiento = TipoMovimiento.INGRESO
-                }
-            ) {
-                Text("INGRESO")
-            }
-
-            Button(
-                onClick = {
-                    tipoMovimiento = TipoMovimiento.EGRESO
-                }
-            ) {
-                Text("EGRESO")
-            }
-        }
-
-        Spacer(
-            modifier = Modifier.height(8.dp)
-        )
-
-        Text(
-            text = "Seleccionado: $tipoMovimiento"
-        )
-
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
-
-        // ===============================
-        // BOTÓN REGISTRAR
-        // ===============================
-
-        Button(
-            onClick = {
-
-                val montoNumero = monto
-                    .replace(",", ".")
-                    .toDoubleOrNull()
-
-                if (
-                    descripcion.isBlank() ||
-                    categoria.isBlank() ||
-                    montoNumero == null ||
-                    montoNumero <= 0
-                ) {
-
-                    mensaje = "Completa los campos correctamente"
-
-                } else {
-
-                    val nuevoMovimiento = Movimiento(
-                        descripcion = descripcion,
-                        monto = montoNumero,
-                        categoria = categoria,
-                        tipo = tipoMovimiento
-                    )
-
-                    movimientos.add(nuevoMovimiento)
-
-                    mensaje = "Movimiento creado correctamente"
-
-                    // Limpiar formulario
-
-                    descripcion = ""
-                    monto = ""
-                    categoria = ""
-
-                    tipoMovimiento = TipoMovimiento.INGRESO
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Registrar")
-        }
-
-        Spacer(
-            modifier = Modifier.height(8.dp)
-        )
-
-        // ===============================
-        // MENSAJE
-        // ===============================
-
-        if (mensaje.isNotBlank()) {
-
-            Text(
-                text = mensaje,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-
-        Spacer(
-            modifier = Modifier.height(24.dp)
-        )
-
-        // ===============================
-        // RESUMEN
-        // ===============================
-
-        Text(
-            text = "RESUMEN",
-            style = MaterialTheme.typography.titleLarge
-        )
-
-        Spacer(
-            modifier = Modifier.height(16.dp)
-        )
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    color = VerdeHeader,
+                    shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
+                )
+                .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
 
             Text(
-                text = "Ingresos: Bs %.2f".format(totalIngresos)
+                text = "Control de Gastos",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
             )
 
-            Text(
-                text = "Egresos: Bs %.2f".format(totalEgresos)
-            )
-
-            Text(
-                text = "Saldo: Bs %.2f".format(totalSaldo)
-            )
-        }
-
-        Spacer(
-            modifier = Modifier.height(24.dp)
-        )
-
-        // ===============================
-        // MOVIMIENTOS
-        // ===============================
-        if(movimientos.isEmpty()){
-            Text(
-                text = "No se registraron transacciones",
-                style = MaterialTheme.typography.titleLarge
-            )
-        }
-        else{
-            Text(
-                text = "MOVIMIENTOS REALIZADOS",
-                style = MaterialTheme.typography.titleLarge
-            )
-
-            Spacer(
-                modifier = Modifier.height(16.dp)
-            )
-
-            // ENCABEZADO
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Saldo Disponible",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                IconButton(onClick = { saldoVisible = !saldoVisible }) {
+                    Text(
+                        text = if (saldoVisible) "\uD83D\uDC41" else "\uD83D\uDE48",
+                        fontSize = 18.sp
+                    )
+                }
+            }
+
+            Text(
+                text = if (saldoVisible) "Bs %.2f".format(totalSaldo) else "Bs ***",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+        ) {
+
+            // ===============================
+            // TÍTULO DEL FORMULARIO
+            // ===============================
+
+            Text(
+                text = "Ingresar nuevo movimiento",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // ===============================
+            // MONTO
+            // ===============================
+
+            Text(
+                text = "Monto",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            OutlinedTextField(
+                value = monto,
+                onValueChange = { valor ->
+
+                    // Permite números y un punto/coma decimal
+                    if (
+                        valor.isEmpty() ||
+                        valor.matches(Regex("^\\d*([.,]\\d*)?$"))
+                    ) {
+                        monto = valor
+                    }
+                },
+                placeholder = {
+                    Text("Ingresa el monto...")
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = GrisBorde,
+                    focusedBorderColor = VerdeIngreso
+                ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Decimal
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ===============================
+            // CATEGORÍA (LISTA DESPLEGABLE)
+            // ===============================
+
+            Text(
+                text = "Categoría",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            ExposedDropdownMenuBox(
+                expanded = categoriaExpandida,
+                onExpandedChange = { categoriaExpandida = it }
+            ) {
+                OutlinedTextField(
+                    value = categoria,
+                    onValueChange = {},
+                    readOnly = true,
+                    placeholder = {
+                        Text("Selecciona la categoría correcta")
+                    },
+                    trailingIcon = {
+                        Text("\u25BE", fontSize = 18.sp)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = GrisBorde,
+                        focusedBorderColor = VerdeIngreso
+                    )
+                )
+
+                ExposedDropdownMenu(
+                    expanded = categoriaExpandida,
+                    onDismissRequest = { categoriaExpandida = false }
+                ) {
+                    categorias.forEach { opcion ->
+                        DropdownMenuItem(
+                            text = { Text(opcion) },
+                            onClick = {
+                                categoria = opcion
+                                categoriaExpandida = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ===============================
+            // TIPO DE MOVIMIENTO (LISTA DESPLEGABLE)
+            // ===============================
+
+            Text(
+                text = "Tipo de Movimiento",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            ExposedDropdownMenuBox(
+                expanded = tipoExpandido,
+                onExpandedChange = { tipoExpandido = it }
+            ) {
+                OutlinedTextField(
+                    value = if (tipoSeleccionado) {
+                        if (tipoMovimiento == TipoMovimiento.INGRESO) "Ingreso" else "Egreso"
+                    } else {
+                        ""
+                    },
+                    onValueChange = {},
+                    readOnly = true,
+                    placeholder = {
+                        Text("Selecciona el movimiento")
+                    },
+                    trailingIcon = {
+                        Text("\u25BE", fontSize = 18.sp)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedBorderColor = GrisBorde,
+                        focusedBorderColor = VerdeIngreso
+                    )
+                )
+
+                ExposedDropdownMenu(
+                    expanded = tipoExpandido,
+                    onDismissRequest = { tipoExpandido = false }
+                ) {
+                    tiposMovimiento.forEach { opcion ->
+                        DropdownMenuItem(
+                            text = { Text(if (opcion == TipoMovimiento.INGRESO) "Ingreso" else "Egreso") },
+                            onClick = {
+                                tipoMovimiento = opcion
+                                tipoSeleccionado = true
+                                tipoExpandido = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // ===============================
+            // DESCRIPCIÓN
+            // ===============================
+
+            Text(
+                text = "Descripción",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            OutlinedTextField(
+                value = descripcion,
+                onValueChange = {
+                    descripcion = it
+                },
+                placeholder = {
+                    Text("¿Qué hiciste con tu plata?")
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = GrisBorde,
+                    focusedBorderColor = VerdeIngreso
+                )
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // ===============================
+            // BOTÓN REGISTRAR
+            // ===============================
+
+            Button(
+                onClick = {
+
+                    val montoNumero = monto
+                        .replace(",", ".")
+                        .toDoubleOrNull()
+
+                    if (
+                        descripcion.isBlank() ||
+                        categoria.isBlank() ||
+                        montoNumero == null ||
+                        montoNumero <= 0
+                    ) {
+
+                        mensaje = "Completa los campos correctamente"
+
+                    } else {
+
+                        val nuevoMovimiento = Movimiento(
+                            descripcion = descripcion,
+                            monto = montoNumero,
+                            categoria = categoria,
+                            tipo = tipoMovimiento
+                        )
+
+                        movimientos.add(nuevoMovimiento)
+
+                        mensaje = "Movimiento creado correctamente"
+
+                        // Limpiar formulario
+
+                        descripcion = ""
+                        monto = ""
+                        categoria = ""
+
+                        tipoMovimiento = TipoMovimiento.INGRESO
+                        tipoSeleccionado = false
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-
-                    .background(color = Color(0xFF1E293B),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = Color(0xFFE2E8F0),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .padding(9.dp)
-
-
-                ,
-
+                    .height(50.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = VerdeBoton,
+                    contentColor = Color.Black
+                )
             ) {
-
                 Text(
-                    text = "Tipo",
-                    modifier = Modifier.weight(1.5f),
-                    color= Color.White
-                )
-
-                Text(
-                    text = "Categoría",
-                    modifier = Modifier.weight(3f),
-                    color= Color.White
-                )
-
-
-
-
-                Text(
-                    text = "Descripción",
-                    modifier = Modifier.weight(3f),
-                    color= Color.White
-                )
-                Text(
-                    text = "Monto",
-                    modifier = Modifier.weight(2f),
-                    color= Color.White
+                    text = "Registrar",
+                    fontWeight = FontWeight.Bold
                 )
             }
 
-            // LISTA DE MOVIMIENTOS
+            Spacer(modifier = Modifier.height(8.dp))
 
-            movimientos.forEach { movimiento ->
-                val colorTipo = if (
-                    movimiento.tipo == TipoMovimiento.INGRESO
-                ) {
-                    Color(0xFF16A34A)
-                } else {
-                    Color(0xFFDC2626)
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
+            // ===============================
+            // MENSAJE
+            // ===============================
 
-                        .background(color = colorTipo, shape = RoundedCornerShape(8.dp))
-                        .border(
-                            width = 1.dp,
-                            color = Color(0xFFE2E8F0),
-                            shape = RoundedCornerShape(8.dp)
+            if (mensaje.isNotBlank()) {
+
+                Text(
+                    text = mensaje,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = GrisTexto
+                )
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            HorizontalDivider(color = GrisBorde)
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // ===============================
+            // MOVIMIENTOS
+            // ===============================
+
+            Text(
+                text = "Movimientos Registrados",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (movimientos.isEmpty()) {
+                Text(
+                    text = "No se registraron transacciones",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = GrisTexto
+                )
+            } else {
+
+                movimientos.forEach { movimiento ->
+
+                    val esIngreso = movimiento.tipo == TipoMovimiento.INGRESO
+                    val colorMonto = if (esIngreso) VerdeIngreso else RojoEgreso
+                    val signo = if (esIngreso) "+" else "-"
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 12.dp)
+                    ) {
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = if (esIngreso) "Ingreso" else "Egreso",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+
+                            Text(
+                                text = "$signo Bs %.2f".format(movimiento.monto),
+                                color = colorMonto,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "${movimiento.categoria} · ${movimiento.descripcion}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = GrisTexto
                         )
-                        .padding(12.dp),
-                    
+                    }
 
-                ) {
-                    Text(
-                        text = movimiento.tipo.name,
-                        modifier = Modifier.weight(1.5f)
-                    )
-                    Text(
-                        text = movimiento.categoria,
-                        modifier = Modifier.weight(3f)
-                    )
-                    Text(
-                        text = movimiento.descripcion,
-                        modifier = Modifier.weight(3f)
-                    )
-
-
-
-                    Text(
-                        text = "Bs %.2f".format(movimiento.monto),
-                        modifier = Modifier.weight(2f)
-                    )
-
-
+                    HorizontalDivider(color = GrisBorde)
                 }
             }
         }
-
     }
 }
-
-
