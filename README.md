@@ -15,6 +15,20 @@ Construida con **Kotlin** y **Jetpack Compose**, la aplicación permite consulta
 
 ---
 
+## 📑 Table of Contents
+
+* [✨ Features](#-features)
+
+    * [💵 Balance](#-balance)
+    * [➕ Transactions](#-transactions)
+    * [📋 Transaction History](#-transaction-history)
+* [🛠️ Tech Stack](#️-tech-stack)
+* [🏗️ Project Configuration](#️-project-configuration)
+* [🧭 Navigation](#-navigation)
+* [🎨 UI](#-ui)
+
+---
+
 ## ✨ Features
 
 ### 💵 Balance
@@ -57,11 +71,7 @@ Consulta de todos los movimientos registrados.
 | **Material 3**            | Sistema de diseño y componentes |
 | **Navigation Compose**    | Navegación entre pantallas      |
 | **AndroidX Core KTX**     | APIs y extensiones de Android   |
-| **Lifecycle Runtime KTX** | Gestión del ciclo de vida       |
 | **Gradle Kotlin DSL**     | Build y configuración           |
-| **JUnit**                 | Testing unitario                |
-| **Espresso**              | UI Testing                      |
-| **Compose UI Testing**    | Testing de componentes Compose  |
 
 ---
 
