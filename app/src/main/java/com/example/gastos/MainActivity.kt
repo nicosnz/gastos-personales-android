@@ -288,7 +288,7 @@ private fun RegisterTransactionScreen(navController: NavController,movimientos: 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp)
+                .padding(horizontal = 20.dp, vertical = 28.dp)
         ) {
 
             // ===============================
