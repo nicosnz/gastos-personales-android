@@ -35,6 +35,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,6 +43,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.NavHost
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.gastos.ui.theme.GastosTheme
 
 
@@ -105,80 +111,44 @@ private val GrisBorde = Color(0xFFE2E8F0)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AplicacionGastos() {
+private fun AplicacionGastos() {
 
-    // ===============================
-    // ESTADOS DEL FORMULARIO
-    // ===============================
-
-    var descripcion by remember {
-        mutableStateOf("")
-    }
-
-    var monto by remember {
-        mutableStateOf("")
-    }
-
-    var categoria by remember {
-        mutableStateOf("")
-    }
-
-    var tipoMovimiento by remember {
-        mutableStateOf(TipoMovimiento.INGRESO)
-    }
-
-    var mensaje by remember {
-        mutableStateOf("")
-    }
-
-    // Estados solo de UI para los menús desplegables
-    var categoriaExpandida by remember { mutableStateOf(false) }
-    var tipoExpandido by remember { mutableStateOf(false) }
-    var tipoSeleccionado by remember { mutableStateOf(false) }
-    var saldoVisible by remember { mutableStateOf(true) }
-
-    // ===============================
-    // LISTA DE MOVIMIENTOS
-    // ===============================
-
+    val navController = rememberNavController();
     val movimientos = remember {
         mutableStateListOf<Movimiento>()
     }
-
-    val categorias = listOf(
-        "Comida",
-        "Transporte",
-        "Otros"
-    )
-
-    val tiposMovimiento = listOf(
-        TipoMovimiento.INGRESO,
-        TipoMovimiento.EGRESO
-    )
-
-
-    // ===============================
-    // CÁLCULOS
-    // ===============================
+    NavHost(
+        navController = navController,
+        startDestination ="home"
+    ){
+        composable("home"){
+            HomeScreen(navController,movimientos )
+        }
+        composable("register") {
+            RegisterTransactionScreen(navController,movimientos)
+        }
+        composable("transactions") {
+            TransactionsScreen(navController,movimientos)
+        }
+    }
 
 
+
+
+}
+
+
+@Composable
+private fun HomeScreen(navController: NavController, movimientos: SnapshotStateList<Movimiento>){
+    var saldoVisible by remember { mutableStateOf(true) }
     val totalSaldo = calcularSaldo(movimientos)
-
-    // ===============================
-    // INTERFAZ
-    // ===============================
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
             .verticalScroll(rememberScrollState())
+
     ) {
-
-        // ===============================
-        // HEADER VERDE
-        // ===============================
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -221,6 +191,99 @@ fun AplicacionGastos() {
                 fontWeight = FontWeight.Bold
             )
         }
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+        ) {
+            Button(
+                onClick = { navController.navigate("register") },modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = VerdeBoton,
+                    contentColor = Color.Black
+                )
+            ) {
+                Text(text = "Registrar movimiento", fontWeight = FontWeight.Bold)
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(
+                onClick = { navController.navigate("transactions") },modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = VerdeBoton,
+                    contentColor = Color.Black
+                )
+            ) {
+
+                Text("Ver movimientos")
+            }
+        }
+
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun RegisterTransactionScreen(navController: NavController,movimientos: SnapshotStateList<Movimiento>) {
+    // ===============================
+    // ESTADOS DEL FORMULARIO
+    // ===============================
+
+    var descripcion by remember {
+        mutableStateOf("")
+    }
+
+    var monto by remember {
+        mutableStateOf("")
+    }
+
+    var categoria by remember {
+        mutableStateOf("")
+    }
+
+    var tipoMovimiento by remember {
+        mutableStateOf(TipoMovimiento.INGRESO)
+    }
+
+    var mensaje by remember {
+        mutableStateOf("")
+    }
+
+    // Estados solo de UI para los menús desplegables
+    var categoriaExpandida by remember { mutableStateOf(false) }
+    var tipoExpandido by remember { mutableStateOf(false) }
+    var tipoSeleccionado by remember { mutableStateOf(false) }
+
+    // ===============================
+    // LISTA DE MOVIMIENTOS
+    // ===============================
+
+
+
+    val categorias = listOf(
+        "Comida",
+        "Transporte",
+        "Otros"
+    )
+
+    val tiposMovimiento = listOf(
+        TipoMovimiento.INGRESO,
+        TipoMovimiento.EGRESO
+    )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .verticalScroll(rememberScrollState())
+    ) {
+
 
         Column(
             modifier = Modifier
@@ -497,72 +560,116 @@ fun AplicacionGastos() {
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
+            Button(onClick = {
+                navController.popBackStack()
+            },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = VerdeBoton,
+                    contentColor = Color.Black
+                )
+            ) {
+                Text(text = "Volver", fontWeight = FontWeight.Bold)
+            }
             HorizontalDivider(color = GrisBorde)
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // ===============================
-            // MOVIMIENTOS
-            // ===============================
 
+
+        }
+    }
+}
+
+@Composable
+private fun TransactionsScreen(navController: NavController,movimientos: SnapshotStateList<Movimiento>){
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .verticalScroll(rememberScrollState())
+    ) {
+
+
+        // ===============================
+        // MOVIMIENTOS
+        // ===============================
+
+        Text(
+            text = "Movimientos Registrados",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (movimientos.isEmpty()) {
             Text(
-                text = "Movimientos Registrados",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                text = "No se registraron transacciones",
+                style = MaterialTheme.typography.bodyMedium,
+                color = GrisTexto
             )
+        } else {
 
-            Spacer(modifier = Modifier.height(16.dp))
+            movimientos.forEach { movimiento ->
 
-            if (movimientos.isEmpty()) {
-                Text(
-                    text = "No se registraron transacciones",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = GrisTexto
-                )
-            } else {
+                val esIngreso = movimiento.tipo == TipoMovimiento.INGRESO
+                val colorMonto = if (esIngreso) VerdeIngreso else RojoEgreso
+                val signo = if (esIngreso) "+" else "-"
 
-                movimientos.forEach { movimiento ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp)
+                ) {
 
-                    val esIngreso = movimiento.tipo == TipoMovimiento.INGRESO
-                    val colorMonto = if (esIngreso) VerdeIngreso else RojoEgreso
-                    val signo = if (esIngreso) "+" else "-"
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 12.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = if (esIngreso) "Ingreso" else "Egreso",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
-                            )
-
-                            Text(
-                                text = "$signo Bs %.2f".format(movimiento.monto),
-                                color = colorMonto,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (esIngreso) "Ingreso" else "Egreso",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
 
                         Text(
-                            text = "${movimiento.categoria} · ${movimiento.descripcion}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = GrisTexto
+                            text = "$signo Bs %.2f".format(movimiento.monto),
+                            color = colorMonto,
+                            fontWeight = FontWeight.Bold
                         )
                     }
 
-                    HorizontalDivider(color = GrisBorde)
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = "${movimiento.categoria} · ${movimiento.descripcion}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = GrisTexto
+                    )
                 }
+
+                HorizontalDivider(color = GrisBorde)
             }
         }
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(onClick = {
+            navController.popBackStack()
+        },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            shape = RoundedCornerShape(24.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = VerdeBoton,
+                contentColor = Color.Black
+            )
+        ) {
+            Text(text = "Volver", fontWeight = FontWeight.Bold)
+        }
     }
+
 }
