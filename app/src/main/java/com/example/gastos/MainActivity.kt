@@ -591,6 +591,7 @@ private fun TransactionsScreen(navController: NavController,movimientos: Snapsho
             .fillMaxSize()
             .background(Color.White)
             .verticalScroll(rememberScrollState())
+            .padding(vertical = 28.dp, horizontal = 17.dp)
     ) {
 
 
@@ -656,6 +657,7 @@ private fun TransactionsScreen(navController: NavController,movimientos: Snapsho
             }
         }
         Spacer(modifier = Modifier.height(24.dp))
+
         Button(onClick = {
             navController.popBackStack()
         },
